@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.py[cod]
+.env
+sessions/*
+!sessions/.gitkeep
+.pytest_cache/
+.coverage
+dist/

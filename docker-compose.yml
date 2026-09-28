@@ -1,0 +1,14 @@
+services:
+  dronevision-follow:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      CAMERA_SOURCE: webcam
+      CAMERA_URI: "0"
+      DRONE_MODE: simulation
+    volumes:
+      - ./sessions:/opt/dronevision-follow/sessions
+    restart: unless-stopped

@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1018">
+  <title>DroneVision-Follow | Vision Monitoring</title>
+  <style>
+    :root{--bg:#0b1018;--panel:#111a26;--panel2:#151f2d;--line:#243244;--text:#e7edf5;--muted:#8795a8;--cyan:#36d3d0;--green:#47d49a;--amber:#ffbf69;--red:#ff6878;--blue:#81aaff;--shadow:0 14px 36px #0003}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 18% -12%,#1d3744 0,transparent 34%),var(--bg);color:var(--text);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+    button,input,select{font:inherit}button{cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:9px 13px;background:#1b2938;color:var(--text);font-weight:650;transition:.18s}button:hover{filter:brightness(1.15);transform:translateY(-1px)}button:disabled{opacity:.45;cursor:not-allowed;transform:none}.primary{background:linear-gradient(135deg,#147a80,#1b9b9c);border-color:#2db6b3;color:#fff}.danger{background:#512834;border-color:#833d4a;color:#ffdfe1}.ghost{background:transparent}.tiny{font-size:12px;padding:6px 9px}
+    .shell{max-width:1600px;margin:auto;padding:22px 26px 34px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:20px}.brand{display:flex;align-items:center;gap:13px}.mark{width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,#1c9ca0,#213e59);display:grid;place-items:center;color:#d8ffff;font-size:19px;font-weight:900;box-shadow:0 0 25px #36d3d033}.brand h1{font-size:18px;letter-spacing:.09em;margin:0;font-weight:780}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.topright{display:flex;gap:10px;align-items:center}.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:#b4c1d0;background:#111a24;font-size:11px;font-weight:800;letter-spacing:.08em}.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 3px #8795a81a}.dot.live{background:var(--green);box-shadow:0 0 0 3px #47d49a22}.dot.warn{background:var(--amber)}
+    .controlbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#0e1621;border:1px solid var(--line);border-radius:13px;padding:11px;margin-bottom:16px}.controlbar .divider{height:25px;width:1px;background:var(--line);margin:0 5px}.controlbar select,.controlbar input{background:#131e2b;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px 10px;outline:none}.controlbar input{width:min(270px,40vw)}.mode-note{margin-left:auto;color:var(--muted);font-size:11px}
+    .layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,.85fr);gap:16px;align-items:start}.panel{background:linear-gradient(180deg,#121b27,#101722);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;border-bottom:1px solid #202d3d}.panel-title{font-size:11px;letter-spacing:.12em;font-weight:850;color:#b4c2d2}.panel-sub{color:var(--muted);font-size:11px}.video-wrap{position:relative;min-height:290px;background:#05090e;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:crosshair}.video-wrap img{display:block;width:100%;height:auto;min-height:290px;max-height:65vh;object-fit:contain}.video-placeholder{position:absolute;text-align:center;color:#728198;padding:24px;pointer-events:none}.video-placeholder strong{display:block;color:#c8d4e2;margin-bottom:7px;font-size:14px}.live-footer{padding:10px 15px;display:flex;justify-content:space-between;gap:10px;align-items:center;border-top:1px solid #202d3d;color:var(--muted);font-size:11px}.inline-state{color:var(--green);font-weight:800}
+    .side{display:grid;gap:16px}.target-main{padding:16px}.target-id{font-size:30px;letter-spacing:.02em;font-weight:800}.target-meta{color:var(--muted);font-size:12px;margin-top:2px}.state-chip{display:inline-block;padding:5px 8px;margin-top:11px;border-radius:6px;background:#18352f;color:#71e1b0;font-size:10px;font-weight:850;letter-spacing:.1em}.state-chip.warn{background:#3a3020;color:var(--amber)}.state-chip.lost{background:#47232b;color:#ff8791}
+    .conf-row{margin:14px 0 15px;display:flex;justify-content:space-between;color:var(--muted);font-size:11px}.bar{height:5px;background:#253344;border-radius:9px;overflow:hidden;margin-top:-8px}.bar i{display:block;width:0;height:100%;background:linear-gradient(90deg,#26aeb0,#70e4b5);transition:width .2s}
+    .metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.metric{background:#151f2c;border:1px solid #202e3e;border-radius:10px;padding:10px 11px;min-width:0}.metric span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em}.metric strong{display:block;margin-top:5px;font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.metric small{font-size:10px;color:var(--muted);font-weight:500}
+    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:16px 0}.stat{padding:13px 14px}.stat .label{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.stat .value{font-size:22px;font-weight:800;margin-top:5px;font-variant-numeric:tabular-nums}.stat .sub{font-size:10px;color:var(--muted);margin-top:2px}
+    .lower{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(270px,.8fr);gap:16px}.charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:13px}.chart{background:#0f1722;border:1px solid #202d3b;border-radius:10px;padding:9px;min-width:0}.chart-title{font-size:10px;color:#aebccd;letter-spacing:.06em;font-weight:800;margin:0 0 5px}.chart canvas{width:100%;height:105px;display:block}.chart.wide{grid-column:span 2}.map-wrap{height:238px;padding:12px}.map-wrap canvas{width:100%;height:100%}
+    .health{padding:11px 15px;display:grid;gap:2px}.health-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1f2a38;color:#aab8c8;font-size:12px}.health-row:last-child{border:0}.health-row b{font-size:10px;letter-spacing:.07em;color:var(--muted)}.health-row b.ok{color:var(--green)}.health-row b.bad{color:var(--red)}.health-row b.sim{color:var(--amber)}
+    .event-list{max-height:270px;overflow:auto;padding:4px 14px 11px}.event{display:grid;grid-template-columns:55px 8px 1fr;gap:8px;padding:9px 0;border-bottom:1px solid #202b38;font-size:11px}.event time{color:#75859a;font-variant-numeric:tabular-nums}.event .edot{width:6px;height:6px;border-radius:50%;background:var(--cyan);margin-top:5px}.event.warning .edot{background:var(--amber)}.event.error .edot{background:var(--red)}.event strong{display:block;color:#d6e0ec;font-size:10px;letter-spacing:.05em}.event span{color:var(--muted)}
+    .section-title{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 0}.section-title h2{font-size:11px;letter-spacing:.11em;margin:0;color:#b4c2d2}.export-row{display:flex;gap:7px}.footnote{color:#718198;font-size:10px;padding:0 16px 13px}.hidden{display:none!important}
+    @media(max-width:1050px){.layout,.lower{grid-template-columns:1fr}.side{grid-template-columns:repeat(2,minmax(0,1fr))}.side .panel:first-child{grid-column:span 2}.stats{grid-template-columns:repeat(3,1fr)}.mode-note{width:100%;margin:2px 0 0}}
+    @media(max-width:650px){.shell{padding:15px 12px 24px}.topbar{align-items:flex-start}.brand h1{font-size:14px}.topright{flex-direction:column;align-items:flex-end}.controlbar{gap:7px}.controlbar .divider{display:none}.controlbar input{width:100%;flex:1}.controlbar select{flex:1}.side{grid-template-columns:1fr}.side .panel:first-child{grid-column:auto}.stats{grid-template-columns:repeat(2,1fr);gap:8px}.stat{padding:11px}.stat .value{font-size:19px}.charts{grid-template-columns:1fr}.chart.wide{grid-column:auto}.video-wrap{min-height:220px}.video-wrap img{min-height:220px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="mark">DV</div><div><h1>DRONEVISION <span style="color:#42ceca">FOLLOW</span></h1><p>Intelligent face tracking · visual monitoring platform</p></div></div>
+      <div class="topright"><span class="pill"><i id="onlineDot" class="dot"></i><span id="onlineText">SYSTEM OFFLINE</span></span><span class="pill" style="color:#ffcb7b;border-color:#55452d">SIMULATION / OBSERVATION</span></div>
+    </header>
+
+    <section class="controlbar">
+      <select id="sourceKind" aria-label="Camera source"><option value="webcam">USB / Webcam</option><option value="video">Recorded video</option><option value="rtsp">RTSP / stream</option><option value="http">HTTP / MJPEG</option><option value="udp">UDP stream</option></select>
+      <input id="sourceUri" value="0" aria-label="Camera index or source URI" placeholder="Camera index, video path, or stream URI">
+      <button id="startBtn" class="primary">Start camera</button><button id="stopBtn">Stop</button><span class="divider"></span>
+      <button id="trackingBtn">Pause tracking</button><button id="recordBtn">Start recording</button><button id="releaseBtn" class="ghost">Release target</button>
+      <button id="controllerBtn" class="ghost">Enable simulated output</button><button id="estopBtn" class="danger">Emergency stop</button>
+      <span class="mode-note">Physical flight control is disabled in this build.</span>
+    </section>
+
+    <section class="layout">
+      <div class="panel">
+        <div class="panel-head"><div><div class="panel-title">LIVE CAMERA FEED</div><div class="panel-sub" id="cameraSub">Click a detected face in the image to lock that target</div></div><span class="pill"><i id="camDot" class="dot"></i><span id="camLabel">NO CAMERA</span></span></div>
+        <div class="video-wrap" id="videoWrap"><img id="video" alt="Live annotated camera feed" class="hidden"><div class="video-placeholder" id="placeholder"><strong>Camera feed is waiting</strong>Connect a webcam or select a video source to begin.</div></div>
+        <div class="live-footer"><span>CAMERA CENTER <b style="color:#dce7f1">＋</b> &nbsp; · &nbsp; Target boxes and paths are drawn on the feed</span><span id="frameLabel">FRAME —</span></div>
+      </div>
+      <aside class="side">
+        <section class="panel">
+          <div class="panel-head"><div><div class="panel-title">TARGET INFORMATION</div><div class="panel-sub">Operator-selected track</div></div><span class="pill"><i id="targetDot" class="dot"></i><span id="targetMini">NO TARGET</span></span></div>
+          <div class="target-main">
+            <div class="target-id" id="targetId">—</div><div class="target-meta" id="targetMeta">Select a face from the live camera feed</div>
+            <span class="state-chip" id="targetState">NO TARGET</span>
+            <div class="conf-row"><span>TRACK CONFIDENCE</span><b id="confidenceText">—</b></div><div class="bar"><i id="confidenceBar"></i></div>
+            <div class="metric-grid" style="margin-top:15px">
+              <div class="metric"><span>Estimated range</span><strong id="distanceValue">—</strong><small>Monocular estimate</small></div>
+              <div class="metric"><span>Target speed</span><strong id="speedValue">—</strong><small>Image-space px/s</small></div>
+              <div class="metric"><span>Direction</span><strong id="directionValue">—</strong></div>
+              <div class="metric"><span>Horizontal error</span><strong id="errorXValue">—</strong></div>
+              <div class="metric"><span>Vertical error</span><strong id="errorYValue">—</strong></div>
+              <div class="metric"><span>Visible faces</span><strong id="faceCountValue">0</strong></div>
+            </div>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><div class="panel-title">SYSTEM HEALTH</div><div class="panel-sub">Live service state</div></div><button class="tiny ghost" id="refreshBtn">Refresh</button></div>
+          <div class="health">
+            <div class="health-row"><span>Camera input</span><b id="healthCamera">OFFLINE</b></div>
+            <div class="health-row"><span>Face detector</span><b id="healthDetector">READY</b></div>
+            <div class="health-row"><span>Multi-object tracker</span><b id="healthTracker">READY</b></div>
+            <div class="health-row"><span>Target lock</span><b id="healthTarget">NONE</b></div>
+            <div class="health-row"><span>Drone interface</span><b class="sim">SIMULATION</b></div>
+            <div class="health-row"><span>Safety layer</span><b id="healthSafety" class="ok">ACTIVE · BOUNDED</b></div>
+            <div class="health-row"><span>Telemetry WebSocket</span><b id="healthWs">CONNECTING</b></div>
+          </div>
+        </section>
+      </aside>
+    </section>
+
+    <section class="stats">
+      <div class="panel stat"><div class="label">Processing FPS</div><div class="value" id="fpsStat">—</div><div class="sub">bounded latest-frame queue</div></div>
+      <div class="panel stat"><div class="label">Inference latency</div><div class="value" id="latencyStat">—</div><div class="sub">detector + tracker + analytics</div></div>
+      <div class="panel stat"><div class="label">Track confidence</div><div class="value" id="confidenceStat">—</div><div class="sub">detector score proxy</div></div>
+      <div class="panel stat"><div class="label">Capture FPS</div><div class="value" id="captureStat">—</div><div class="sub">camera acquisition rate</div></div>
+      <div class="panel stat"><div class="label">Dropped frames</div><div class="value" id="droppedStat">0</div><div class="sub">old frames skipped for freshness</div></div>
+    </section>
+
+    <section class="lower">
+      <div class="panel">
+        <div class="section-title"><h2>LIVE TELEMETRY</h2><div class="export-row"><button class="tiny" id="exportCsv">Export CSV</button><button class="tiny" id="exportJson">Export JSON</button></div></div>
+        <div class="charts">
+          <div class="chart"><p class="chart-title">TARGET POSITION · NORMALIZED</p><canvas id="positionChart"></canvas></div>
+          <div class="chart"><p class="chart-title">TARGET SPEED · PX/S</p><canvas id="speedChart"></canvas></div>
+          <div class="chart"><p class="chart-title">CONFIDENCE · %</p><canvas id="confidenceChart"></canvas></div>
+          <div class="chart"><p class="chart-title">PROCESSING LATENCY · MS</p><canvas id="latencyChart"></canvas></div>
+          <div class="chart wide"><p class="chart-title">TARGET POSITION MAP · NORMALIZED COORDINATES</p><div class="map-wrap"><canvas id="mapChart"></canvas></div></div>
+        </div>
+        <div class="footnote">Range is an uncalibrated monocular estimate. Speed is measured in image pixels per second. These signals are for observation and research, not flight navigation.</div>
+      </div>
+      <div class="side" style="align-content:start">
+        <section class="panel">
+          <div class="panel-head"><div><div class="panel-title">SESSION RECORDING</div><div class="panel-sub" id="recordState">No active session</div></div><span class="pill"><i id="recordDot" class="dot"></i><span id="recordLabel">IDLE</span></span></div>
+          <div class="target-main" style="padding-top:12px"><p class="panel-sub" style="line-height:1.6;margin:0 0 12px">Save annotated/raw video, telemetry, trajectory, events, and a summary report to a local session folder.</p><div class="export-row"><button id="sessionsBtn" class="tiny">View sessions</button><a id="sessionDownload" class="tiny hidden" style="color:#bfe8e8;text-decoration:none;border:1px solid #304254;border-radius:8px;padding:6px 9px" href="#">Download summary</a></div><div id="sessionsList" class="panel-sub" style="margin-top:10px"></div></div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><div class="panel-title">EVENT TIMELINE</div><div class="panel-sub">System and tracking events</div></div><span class="pill" id="eventCount">0 EVENTS</span></div>
+          <div class="event-list" id="eventList"><div class="panel-sub" style="padding:14px 0">Waiting for events…</div></div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><div class="panel-title">SIMULATION SAFETY</div><div class="panel-sub">Command output stays bounded and virtual</div></div></div>
+          <div class="health">
+            <div class="health-row"><span>Physical control</span><b class="sim">DISABLED</b></div>
+            <div class="health-row"><span>Command output</span><b id="commandState">OFF</b></div>
+            <div class="health-row"><span>Emergency stop</span><b id="estopState" class="ok">READY</b></div>
+          </div>
+          <div class="footnote">The controller can only publish a desired command to the mock simulation sink. No motor or flight-control interface is included.</div>
+        </section>
+      </div>
+    </section>
+  </main>
+  <script>
+    const $ = id => document.getElementById(id);
+    const history = [];
+    const eventHistory = [];
+    let wsVideo, wsTelemetry, wsEvents, wsSystem, imageUrl = null, selected = false, tracking = true, recording = false, controller = false;
+    const maxPoints = 240;
+    function socket(path, onmessage, binary) {
+      const proto = location.protocol === "https:" ? "wss://" : "ws://";
+      const ws = new WebSocket(proto + location.host + path);
+      if (binary) ws.binaryType = "blob";
+      ws.onopen = () => { if (path.indexOf("telemetry") >= 0) $("healthWs").textContent = "CONNECTED"; };
+      ws.onclose = () => { if (path.indexOf("telemetry") >= 0) { $("healthWs").textContent = "RECONNECTING"; setTimeout(connectSockets, 2000); } };
+      ws.onerror = () => { if (path.indexOf("telemetry") >= 0) $("healthWs").textContent = "OFFLINE"; };
+      ws.onmessage = event => onmessage(event.data);
+      return ws;
+    }
+    function connectSockets() {
+      if (!wsVideo || wsVideo.readyState > 1) wsVideo = socket("/ws/video", blob => {
+        if (imageUrl) URL.revokeObjectURL(imageUrl);
+        imageUrl = URL.createObjectURL(blob); $("video").src = imageUrl;
+        $("video").classList.remove("hidden"); $("placeholder").classList.add("hidden");
+      }, true);
+      if (!wsTelemetry || wsTelemetry.readyState > 1) wsTelemetry = socket("/ws/telemetry", data => updateTelemetry(JSON.parse(data)), false);
+      if (!wsEvents || wsEvents.readyState > 1) wsEvents = socket("/ws/events", data => addEvent(JSON.parse(data)), false);
+      if (!wsSystem || wsSystem.readyState > 1) wsSystem = socket("/ws/system", data => updateSystem(JSON.parse(data)), false);
+    }
+    async function api(path, method, body) {
+      const options = {method: method || "GET", headers: {"Content-Type":"application/json"}};
+      if (body !== undefined) options.body = JSON.stringify(body);
+      const response = await fetch(path, options);
+      let data = {};
+      try { data = await response.json(); } catch (_) {}
+      if (!response.ok) throw new Error(data.detail || response.statusText);
+      return data;
+    }
+    function setOnline(isOnline) {
+      $("onlineDot").className = "dot" + (isOnline ? " live" : "");
+      $("onlineText").textContent = isOnline ? "SYSTEM ONLINE" : "SYSTEM OFFLINE";
+      $("camDot").className = "dot" + (isOnline ? " live" : "");
+      $("camLabel").textContent = isOnline ? "CONNECTED" : "NO CAMERA";
+      $("healthCamera").textContent = isOnline ? "CONNECTED" : "OFFLINE";
+      $("healthCamera").className = isOnline ? "ok" : "bad";
+    }
+    function updateSystem(s) {
+      setOnline(!!s.online);
+      $("healthDetector").textContent = s.online ? "RUNNING" : "READY";
+      $("healthTracker").textContent = s.online ? (s.tracking_enabled ? "RUNNING" : "PAUSED") : "READY";
+      $("healthDetector").className = s.online ? "ok" : "";
+      $("healthTracker").className = s.online && s.tracking_enabled ? "ok" : "";
+      $("healthTarget").textContent = s.target && s.target.target_id ? "LOCKED #" + s.target.target_id : "NONE";
+      $("healthTarget").className = s.target && s.target.target_id ? "ok" : "";
+      $("commandState").textContent = s.controller_enabled ? "SIMULATED" : "OFF";
+      $("commandState").className = s.controller_enabled ? "sim" : "";
+      $("estopState").textContent = s.safety && s.safety.emergency_stopped ? "STOPPED" : "READY";
+      $("estopState").className = s.safety && s.safety.emergency_stopped ? "bad" : "ok";
+      controller = !!s.controller_enabled;
+      $("controllerBtn").textContent = controller ? "Disable simulated output" : "Enable simulated output";
+    }
+    function fmt(value, digits) { return typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits === undefined ? 2 : digits) : "—"; }
+    function updateTelemetry(t) {
+      history.push(t); if (history.length > maxPoints) history.shift();
+      $("frameLabel").textContent = "FRAME " + (t.frame_id || "—");
+      $("fpsStat").textContent = fmt(t.fps, 1);
+      $("latencyStat").textContent = fmt(t.inference_latency_ms, 1) + " ms";
+      $("captureStat").textContent = fmt(t.capture_fps, 1);
+      $("droppedStat").textContent = t.dropped_frames || 0;
+      $("faceCountValue").textContent = t.face_count || 0;
+      $("targetMini").textContent = t.target_id ? "LOCKED #" + t.target_id : (t.tracking_status || "NO TARGET");
+      $("targetId").textContent = t.target_id ? "TARGET #" + String(t.target_id).padStart(2, "0") : "—";
+      $("targetMeta").textContent = t.target_id ? "Track remains locked until released or explicitly changed" : "Click a face in the live feed to lock a target";
+      const state = t.tracking_status || "NO TARGET";
+      $("targetState").textContent = state.replaceAll("_", " ");
+      $("targetState").className = "state-chip" + (state.indexOf("LOST") >= 0 ? " lost" : (state.indexOf("SEARCH") >= 0 || state.indexOf("OCCLUDED") >= 0 ? " warn" : ""));
+      $("targetDot").className = "dot" + (t.target_id ? " live" : "");
+      const confidence = typeof t.target_confidence === "number" ? t.target_confidence : null;
+      $("confidenceText").textContent = confidence === null ? "—" : (confidence * 100).toFixed(1) + "%";
+      $("confidenceStat").textContent = confidence === null ? "—" : (confidence * 100).toFixed(1) + "%";
+      $("confidenceBar").style.width = confidence === null ? "0%" : Math.max(0, Math.min(100, confidence * 100)) + "%";
+      $("distanceValue").textContent = typeof t.estimated_distance === "number" ? fmt(t.estimated_distance, 1) + " m" : "—";
+      $("speedValue").textContent = typeof t.speed === "number" ? fmt(t.speed, 0) + " px/s" : "—";
+      $("directionValue").textContent = t.direction || "—";
+      $("errorXValue").textContent = typeof t.error_x === "number" ? (t.error_x > 0 ? "+" : "") + fmt(t.error_x, 3) : "—";
+      $("errorYValue").textContent = typeof t.error_y === "number" ? (t.error_y > 0 ? "+" : "") + fmt(t.error_y, 3) : "—";
+      $("healthTarget").textContent = t.target_id ? "LOCKED #" + t.target_id : (state.replaceAll("_", " "));
+      $("healthTarget").className = t.target_id ? "ok" : (state.indexOf("LOST") >= 0 ? "bad" : "");
+      if (t.target_id) selected = true;
+      drawAll();
+    }
+    function canvasSetup(canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      const width = Math.max(10, rect.width), height = Math.max(10, rect.height);
+      if (canvas.width !== Math.floor(width * ratio) || canvas.height !== Math.floor(height * ratio)) {
+        canvas.width = Math.floor(width * ratio); canvas.height = Math.floor(height * ratio);
+      }
+      const ctx = canvas.getContext("2d"); ctx.setTransform(ratio,0,0,ratio,0,0);
+      return {ctx,width,height};
+    }
+    function chart(canvasId, series, minY, maxY) {
+      const canvas = $(canvasId), setup = canvasSetup(canvas), ctx = setup.ctx, w = setup.width, h = setup.height;
+      ctx.clearRect(0,0,w,h); ctx.strokeStyle="#263445";ctx.lineWidth=1;
+      for(let i=0;i<4;i++){const y=8+i*(h-20)/3;ctx.beginPath();ctx.moveTo(32,y);ctx.lineTo(w-5,y);ctx.stroke();}
+      ctx.fillStyle="#728198";ctx.font="9px system-ui";ctx.fillText(String(maxY),3,12);ctx.fillText(String(minY),3,h-2);
+      series.forEach(s=>{
+        ctx.beginPath();ctx.strokeStyle=s.color;ctx.lineWidth=1.8;let open=false;
+        history.forEach((t,i)=>{const value=s.value(t);if(typeof value!=="number"||!Number.isFinite(value)){open=false;return;}
+          const x=34+i*Math.max(1,(w-42)/Math.max(1,maxPoints-1)), y=h-8-((value-minY)/(maxY-minY))*(h-22);
+          if(!open){ctx.moveTo(x,y);open=true;}else ctx.lineTo(x,y);
+        });ctx.stroke();
+      });
+      ctx.fillStyle="#748399";ctx.fillText("RECENT SAMPLES  ·  "+history.length,36,h-1);
+    }
+    function drawMap() {
+      const c=$("mapChart"),{ctx,width:w,height:h}=canvasSetup(c);ctx.clearRect(0,0,w,h);
+      const left=24,right=w-10,top=8,bottom=h-20;
+      ctx.strokeStyle="#263445";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(left,(top+bottom)/2);ctx.lineTo(right,(top+bottom)/2);ctx.moveTo((left+right)/2,top);ctx.lineTo((left+right)/2,bottom);ctx.stroke();
+      ctx.fillStyle="#7c8ca0";ctx.font="9px system-ui";ctx.fillText("+1",3,top+3);ctx.fillText("-1",3,bottom);
+      ctx.fillText("CAMERA CENTER",Math.max(35,(left+right)/2-35),(top+bottom)/2-5);
+      const points=history.filter(t=>typeof t.normalized_x==="number"&&typeof t.normalized_y==="number");
+      if(points.length){ctx.beginPath();ctx.strokeStyle="#ffbd69";ctx.lineWidth=1.5;points.forEach((p,i)=>{const x=left+p.normalized_x*(right-left),y=top+p.normalized_y*(bottom-top);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();
+        const p=points[points.length-1],x=left+p.normalized_x*(right-left),y=top+p.normalized_y*(bottom-top);ctx.fillStyle="#56e0ba";ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();}
+    }
+    function drawAll(){
+      chart("positionChart",[{color:"#43d2ce",value:t=>t.normalized_x},{color:"#829dff",value:t=>t.normalized_y}],0,1);
+      chart("speedChart",[{color:"#ffbd69",value:t=>t.speed}],0,Math.max(500,...history.map(t=>t.speed||0)));
+      chart("confidenceChart",[{color:"#58d9a0",value:t=>typeof t.target_confidence==="number"?t.target_confidence*100:null}],0,100);
+      chart("latencyChart",[{color:"#ff7888",value:t=>t.inference_latency_ms}],0,Math.max(100,...history.map(t=>t.inference_latency_ms||0)));
+      drawMap();
+    }
+    function addEvent(e) {
+      eventHistory.unshift(e); if(eventHistory.length>150)eventHistory.pop();
+      $("eventCount").textContent=eventHistory.length+" EVENTS";
+      const host=$("eventList");host.innerHTML="";
+      eventHistory.slice(0,45).forEach(item=>{const row=document.createElement("div");row.className="event "+(item.severity||"");
+        const date=new Date(item.timestamp*1000);const time=date.toLocaleTimeString([], {hour12:false});
+        row.innerHTML="<time>"+time+"</time><i class='edot'></i><div><strong>"+escapeHtml(item.type.replaceAll("_"," "))+"</strong><span>"+escapeHtml(item.description)+"</span></div>";host.appendChild(row);});
+    }
+    function escapeHtml(text){const node=document.createElement("span");node.textContent=String(text);return node.innerHTML;}
+    $("startBtn").onclick=async()=>{try{const source=$("sourceKind").value,uri=$("sourceUri").value.trim()||"0";await api("/api/camera/start","POST",{source:source,uri:uri});tracking=true;$("trackingBtn").textContent="Pause tracking";$("placeholder").innerHTML="<strong>Camera is connecting…</strong>Waiting for the first frame.";connectSockets();updateSystem(await api("/api/system/status"));}catch(e){alert("Camera could not start: "+e.message);}};
+    $("stopBtn").onclick=async()=>{try{updateSystem(await api("/api/camera/stop","POST"));$("video").classList.add("hidden");$("placeholder").classList.remove("hidden");$("placeholder").innerHTML="<strong>Camera feed is waiting</strong>Connect a webcam or select a video source to begin.";}catch(e){alert(e.message);}};
+    $("trackingBtn").onclick=async()=>{try{tracking=!tracking;await api("/api/tracking/"+(tracking?"start":"stop"),"POST");$("trackingBtn").textContent=tracking?"Pause tracking":"Resume tracking";}catch(e){tracking=true;alert(e.message);}};
+    $("releaseBtn").onclick=async()=>{await api("/api/target/release","POST");selected=false;};
+    $("recordBtn").onclick=async()=>{try{if(!recording){const r=await api("/api/recording/start","POST");recording=true;$("recordLabel").textContent="RECORDING";$("recordDot").className="dot live";$("recordState").textContent=r.session_id;}else{const r=await api("/api/recording/stop","POST");recording=false;$("recordLabel").textContent="IDLE";$("recordDot").className="dot";$("recordState").textContent=r.summary&&r.summary.session_id||"Session saved";if(r.summary&&r.summary.session_id){$("sessionDownload").href="/api/sessions/"+r.summary.session_id+"/files/session_summary.json";$("sessionDownload").classList.remove("hidden");}}$("recordBtn").textContent=recording?"Stop recording":"Start recording";}catch(e){alert(e.message);}};
+    $("controllerBtn").onclick=async()=>{try{const path=controller?"/api/controller/disable":"/api/controller/enable";const result=await api(path,"POST",{enabled:true});controller=!!result.enabled;$("controllerBtn").textContent=controller?"Disable simulated output":"Enable simulated output";$("commandState").textContent=controller?"SIMULATED":"OFF";}catch(e){alert(e.message);}};
+    $("estopBtn").onclick=async()=>{try{const s=await api("/api/emergency-stop","POST");controller=false;$("controllerBtn").textContent="Enable simulated output";$("estopState").textContent=s.emergency_stopped?"STOPPED":"READY";$("estopState").className=s.emergency_stopped?"bad":"ok";$("commandState").textContent="OFF";addEvent({timestamp:Date.now()/1000,type:"EMERGENCY_STOP",severity:"warning",description:"Simulation desired commands are latched to zero."});}catch(e){alert(e.message);}};
+    $("videoWrap").onclick=async event=>{if(!$("video").naturalWidth)return;const rect=$("video").getBoundingClientRect();const x=(event.clientX-rect.left)/rect.width,y=(event.clientY-rect.top)/rect.height;try{await api("/api/target/select","POST",{x:x,y:y});selected=true;}catch(e){$("cameraSub").textContent=e.message;setTimeout(()=>{$("cameraSub").textContent="Click a detected face in the image to lock that target";},1800);}};
+    $("exportCsv").onclick=()=>window.open("/api/telemetry/export?format=csv","_blank");
+    $("exportJson").onclick=()=>window.open("/api/telemetry/export?format=json","_blank");
+    $("refreshBtn").onclick=async()=>{try{updateSystem(await api("/api/system/status"));}catch(e){}};
+    $("sessionsBtn").onclick=async()=>{try{const data=await api("/api/sessions");$("sessionsList").innerHTML=data.items.length?data.items.slice(0,5).map(s=>"<div style='padding:4px 0'>"+escapeHtml(s.session_id)+"</div>").join(""):"No saved sessions yet.";}catch(e){$("sessionsList").textContent=e.message;}};
+    $("sourceKind").onchange=()=>{const kind=$("sourceKind").value;$("sourceUri").value=kind==="webcam"?"0":"";$("sourceUri").placeholder=kind==="webcam"?"Camera index (usually 0)":"Video path or source URI";};
+    window.addEventListener("resize",drawAll);
+    connectSockets();
+    api("/api/system/status").then(updateSystem).catch(()=>{});
+  </script>
+</body>
+</html>

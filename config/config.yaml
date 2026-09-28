@@ -1,0 +1,23 @@
+app:
+  host: 127.0.0.1
+  port: 8000
+camera:
+  source: webcam
+  uri: "0"
+  width: 1280
+  height: 720
+  target_fps: 25
+detector:
+  name: haar_face
+  confidence: 0.55
+tracker:
+  name: iou_centroid
+  max_age: 20
+tracking:
+  lost_seconds: 2.0
+analytics:
+  distance_estimation: true
+  face_width_meters: 0.16
+  focal_length_px: 900
+drone:
+  mode: simulation
